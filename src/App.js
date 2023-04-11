@@ -1,5 +1,6 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useRef, useState } from 'react';
 import "./App.css"
+import Input from './Input'
 
 function HelloWorld(props) {
   const [ isTrue, setIsTrue ] = useState(true)
@@ -7,6 +8,11 @@ function HelloWorld(props) {
   const [ firstName, setFirstName ] = useState("");
   const [ lastName, setLastName ] = useState("");
   const [ dob, setDob ] = useState("");
+
+  // refs
+  const firstNameRef = useRef();
+  const lastNameRef = useRef(null);
+  const dobRef = useRef(null);
 
 
   const toggleTrue = () => {
@@ -37,6 +43,48 @@ function HelloWorld(props) {
 
     setCrowd(people);
   }, [])
+  // for the last parameter []:
+  // 1) when not there, useEffect runs on every render
+  // 2) when an empty array, runs only on first render
+  // 3) you can pass props or state values, but do not set state in the function
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (lastName !== "") {
+      addPerson(firstName, lastName, dob)
+    }
+  }
+
+  const addPerson = (newFirst, newLast, newDOB) => {
+    // create the project
+    let newPerson = {
+      id: crowd.length + 1,
+      firstName: newFirst,
+      lastName: newLast,
+      dob: newDOB,
+    }
+
+    const newList = crowd.concat(newPerson);
+    const sorted = newList.sort((a, b) => {
+      if (a.lastName < b.lastName) {
+        return -1;
+      } else if (a.lastName > b.lastName) {
+        return 1;
+      }
+      return 0;
+    })
+
+    setCrowd(sorted);
+    setFirstName("");
+    setLastName("");
+    setDob("");
+
+    firstNameRef.current.value = "";
+    lastNameRef.current.value = "";
+    dobRef.current.value = "";
+  }
+
 
   return (
     <>
@@ -58,7 +106,7 @@ function HelloWorld(props) {
       <hr />
       <a href="#!" className="btn btn-outline-secondary" onClick={toggleTrue}>Toggle isTrue</a>
       <hr />
-      <form autoComplete='off'>
+      <form autoComplete='off' onSubmit={handleSubmit}>
 
         <div className="mb-3">
           <label htmlFor="first-name" className="form-label">First Name</label>
@@ -66,10 +114,32 @@ function HelloWorld(props) {
             type="text"
             name="first-name"
             id="first-name"
+            ref={firstNameRef}
             className='form-control'
             onChange={(event) => setFirstName(event.target.value)}
           />
         </div>
+        <Input
+          title="Last Name"
+          type="text"
+          ref={lastNameRef}
+          name="last-name"
+          autoComplete="last-name-new"
+          className="form-control"
+          onChange={(event) => setLastName(event.target.value)}
+        />
+
+        <Input
+          title="Date of Birth"
+          type="date"
+          ref={dobRef}
+          name="dob"
+          autoComplete="dob-new"
+          className="form-control"
+          onChange={(event) => setDob(event.target.value)}
+        />
+
+        <input type="submit" value="Submit" className='btn btn-primary'/>
       </form>
       <div>
         First Name: {firstName}<br />
